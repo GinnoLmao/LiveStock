@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ScanningPage1 extends StatelessWidget {
-  const ScanningPage1({Key? key}) : super(key: key);
+  const ScanningPage1({super.key});
 
   @override
   Widget build(BuildContext context) {

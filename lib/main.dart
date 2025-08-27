@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:livestock_prototype/navigation/bottom_nav.dart';
+import 'package:livestock_prototype/pages_connect/connecting_page.dart';
+import 'package:livestock_prototype/pages_connect/connection_failed.dart';
+import 'package:livestock_prototype/pages_connect/connection_page.dart';
+import 'package:livestock_prototype/pages_connect/connection_successful.dart';
 
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFF1ACF68),
         ),
       ),
-      home: BottomNavigation(),
+      home: ConnectionPage(),
     );
   }
 }

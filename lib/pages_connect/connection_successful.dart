@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ConnectionSuccessful extends StatelessWidget {
-  const ConnectionSuccessful({Key? key}) : super(key: key);
+  const ConnectionSuccessful({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ class ConnectionSuccessful extends StatelessWidget {
 
 // ─────────────────────────────── DeviceStatus ───────────────────────────────
 class DeviceStatus extends StatelessWidget {
-  const DeviceStatus({Key? key}) : super(key: key);
+  const DeviceStatus({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class DeviceStatus extends StatelessWidget {
 
 // ─────────────────────────────── ConnectionSteps ───────────────────────────────
 class ConnectionSteps extends StatelessWidget {
-  const ConnectionSteps({Key? key}) : super(key: key);
+  const ConnectionSteps({super.key});
 
   Widget buildStep(String text, int number) {
     return Padding(
@@ -182,7 +182,7 @@ class ConnectionSteps extends StatelessWidget {
 
 // ─────────────────────────────── ConnectDevice ───────────────────────────────
 class ConnectDevice extends StatelessWidget {
-  const ConnectDevice({Key? key}) : super(key: key);
+  const ConnectDevice({super.key});
 
   @override
   Widget build(BuildContext context) {
