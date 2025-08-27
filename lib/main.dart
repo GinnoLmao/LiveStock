@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:livestock_prototype/navigation/bottom_nav.dart';
+import 'package:livestock_prototype/pages/scanning_page1.dart';
+import 'package:livestock_prototype/pages/scanning_page1fail.dart';
 import 'package:livestock_prototype/pages_connect/connecting_page.dart';
 import 'package:livestock_prototype/pages_connect/connection_failed.dart';
 import 'package:livestock_prototype/pages_connect/connection_page.dart';
@@ -21,7 +23,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFF1ACF68),
         ),
       ),
-      home: ConnectionPage(),
+      home: ScanningPage1Fail(),
     );
   }
 }

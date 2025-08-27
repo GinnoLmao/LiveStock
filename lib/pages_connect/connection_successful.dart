@@ -36,16 +36,6 @@ class ConnectionSuccessful extends StatelessWidget {
             ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bluetooth),
-              label: 'Connect',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.camera), label: 'Scan'),
-          ],
-        ),
       ),
     );
   }

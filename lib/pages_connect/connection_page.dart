@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:livestock_prototype/pages/home_page.dart';
+import 'package:livestock_prototype/pages/scanning_page.dart';
 
 class ConnectionPage extends StatelessWidget {
   const ConnectionPage({super.key});

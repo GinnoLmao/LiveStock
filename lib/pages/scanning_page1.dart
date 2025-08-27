@@ -31,16 +31,78 @@ class ScanningPage1 extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 15),
 
               Container(
                 width: 370,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Color(0xFF000000),
+                  color: Color(0xFFE8F5E8),
                   borderRadius: BorderRadius.circular(10),
+                  border: Border(
+                    left: BorderSide(color: Color(0XFF1ACF68), width: 5),
+                  ),
                 ),
-                child: Column(),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // First row: "Scan Complete" with check icon
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Scan Complete",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(width: 8), // Space between text and icon
+                          Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          SizedBox(width: 150),
+                          Text(
+                            "Just Now",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 10), // Space between rows
+                      // Second section: Detection information
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Swine detected:",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 12,
+                            ),
+                          ),
+                          SizedBox(height: 13),
+                          Text(
+                            "ID: SW-2024-001\nWeight: ~ 90 kg",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 12,
+                              height: 1.0, // Removes line spacing
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
               SizedBox(height: 30),
@@ -93,16 +155,6 @@ class ScanningPage1 extends StatelessWidget {
               ),
             ],
           ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bluetooth),
-              label: 'Connect',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.camera), label: 'Scan'),
-          ],
         ),
       ),
     );
