@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:livestock_prototype/pages/scanning_page1.dart';
+import 'package:livestock_prototype/pages/scanning_page1fail.dart';
 import 'package:livestock_prototype/pages_connect/connection_page.dart';
 import 'package:livestock_prototype/pages/scanning_page.dart';
 
@@ -21,13 +23,46 @@ class _BottomNavigationState extends State<BottomNavigation> {
   List<Widget> get _pages => [
     HomePageContent(onTabSelected: _onItemTapped),
     ConnectionPageContent(),
-    ScanningPageContent(),
+    ScanningPage1(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: Stack(
+        children: [
+          _pages[_selectedIndex],
+          // Back button - only show on Connect (index 1) and Scan (index 2) tabs
+          if (_selectedIndex != 0)
+            Positioned(
+              top: 50, // Adjust position as needed
+              left: 25,
+              child: SafeArea(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () {
+                      setState(() {
+                        _selectedIndex = 0; // Go back to Home
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -159,6 +194,9 @@ class HomePageContent extends StatelessWidget {
                             color: Color(0xFFE9F5E9),
                             borderRadius: BorderRadius.circular(45),
                           ),
+                          child: Center(
+                            child: Text('🐖', style: TextStyle(fontSize: 35)),
+                          ),
                         ),
 
                         // Space between icon and text
@@ -205,7 +243,7 @@ class HomePageContent extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 35),
+          SizedBox(height: 20),
 
           // Cow / Baka
           Padding(
@@ -236,6 +274,9 @@ class HomePageContent extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Color(0xFFE9F5E9),
                             borderRadius: BorderRadius.circular(45),
+                          ),
+                          child: Center(
+                            child: Text('🐄', style: TextStyle(fontSize: 35)),
                           ),
                         ),
 

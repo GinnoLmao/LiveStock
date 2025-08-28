@@ -12,7 +12,7 @@ class ScanningPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 60),
+              SizedBox(height: 85),
               Text(
                 "Live Scanning",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
@@ -22,16 +22,16 @@ class ScanningPage extends StatelessWidget {
                 "External device camera",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               Container(
                 width: 370,
-                height: 450,
+                height: 400,
                 decoration: BoxDecoration(
                   color: Color(0xFFD9D9D9),
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 40),
               Container(
                 width: 370,
                 height: 60,

@@ -5,25 +5,27 @@ class ScanningPage1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 60),
-              Text(
-                "Live Scanning",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              SizedBox(height: 15),
-              Text(
-                "External device camera",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              SizedBox(height: 30),
-              Container(
+    return Scaffold(
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: 80),
+            Text(
+              "Live Scanning",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(height: 15),
+            Text(
+              "External device camera",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(height: 30),
+            Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(15),
+
+              child: Container(
                 width: 370,
                 height: 230,
                 decoration: BoxDecoration(
@@ -31,11 +33,16 @@ class ScanningPage1 extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              SizedBox(height: 15),
+            ),
+            SizedBox(height: 15),
 
-              Container(
+            Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(10),
+
+              child: Container(
                 width: 370,
-                height: 120,
+                height: 100,
                 decoration: BoxDecoration(
                   color: Color(0xFFE8F5E8),
                   borderRadius: BorderRadius.circular(10),
@@ -44,7 +51,7 @@ class ScanningPage1 extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -76,8 +83,7 @@ class ScanningPage1 extends StatelessWidget {
                           ),
                         ],
                       ),
-
-                      SizedBox(height: 10), // Space between rows
+                      SizedBox(height: 8),
                       // Second section: Detection information
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +95,7 @@ class ScanningPage1 extends StatelessWidget {
                               fontSize: 12,
                             ),
                           ),
-                          SizedBox(height: 13),
+                          SizedBox(height: 10),
                           Text(
                             "ID: SW-2024-001\nWeight: ~ 90 kg",
                             style: TextStyle(
@@ -104,57 +110,57 @@ class ScanningPage1 extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
 
-              SizedBox(height: 30),
+            SizedBox(height: 30),
 
-              Container(
-                width: 370,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Color(0xFF1ACF68),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.camera_alt, color: Colors.white),
-
-                    SizedBox(width: 10),
-
-                    Text(
-                      "Start Scanning",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+            Container(
+              width: 370,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Color(0xFF1ACF68),
+                borderRadius: BorderRadius.circular(20),
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.camera_alt, color: Colors.white),
 
-              SizedBox(height: 10),
+                  SizedBox(width: 10),
 
-              Container(
-                width: 370,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Color(0xFF1ACF68), width: 1),
-                ),
-                child: Center(
-                  child: Text(
-                    "New Scan",
+                  Text(
+                    "Start Scanning",
                     style: TextStyle(
-                      color: Color(0xFF1ACF68),
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 10),
+
+            Container(
+              width: 370,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Color(0xFF1ACF68), width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  "New Scan",
+                  style: TextStyle(
+                    color: Color(0xFF1ACF68),
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -29,7 +29,7 @@ class ConnectionPage extends StatelessWidget {
                 SizedBox(height: 20),
                 // ConnectionSteps already uses elevated Material and step numbers
                 ConnectionSteps(),
-                SizedBox(height: 60),
+                SizedBox(height: 40),
                 ConnectDevice(),
                 SizedBox(height: 20),
               ],
