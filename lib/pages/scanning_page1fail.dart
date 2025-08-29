@@ -8,11 +8,12 @@ class ScanningPage1Fail extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 80),
+              SizedBox(height: 90),
               Text(
                 "Live Scanning",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
@@ -73,7 +74,7 @@ class ScanningPage1Fail extends StatelessWidget {
                               color: Color(0xFFEF2C2C),
                               size: 20,
                             ),
-                            SizedBox(width: 120),
+                            SizedBox(width: 150),
                             Text(
                               "Just Now",
                               style: TextStyle(

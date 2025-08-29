@@ -23,7 +23,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
   List<Widget> get _pages => [
     HomePageContent(onTabSelected: _onItemTapped),
     ConnectionPageContent(),
-    ScanningPage1(),
+    ScanningPage1Fail(),
   ];
 
   @override
@@ -143,12 +143,17 @@ class HomePageContent extends StatelessWidget {
         ),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Text
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              bottom: 30,
+              top: 80,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

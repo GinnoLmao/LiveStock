@@ -10,7 +10,7 @@ class ScanningPage1 extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 80),
+            SizedBox(height: 96),
             Text(
               "Live Scanning",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
@@ -73,7 +73,7 @@ class ScanningPage1 extends StatelessWidget {
                             color: Colors.green,
                             size: 20,
                           ),
-                          SizedBox(width: 150),
+                          SizedBox(width: 180),
                           Text(
                             "Just Now",
                             style: TextStyle(
