@@ -147,25 +147,27 @@ class HomePageContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Text
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 20,
-              right: 20,
-              bottom: 30,
-              top: 80,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Choose An Animal",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  "Select the type of animal you want to scan",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
-                ),
-              ],
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                bottom: 30,
+                top: 80,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Choose An Animal",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    "Select the type of animal you want to scan",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
+                  ),
+                ],
+              ),
             ),
           ),
 

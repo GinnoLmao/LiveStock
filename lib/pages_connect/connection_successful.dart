@@ -5,36 +5,42 @@ class ConnectionSuccessful extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: ListView(
-            children: [
-              const SizedBox(height: 60),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  Text(
-                    "Device Connection",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                  ),
-                  SizedBox(height: 15),
-                  Text(
-                    "Connect your external device",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                  SizedBox(height: 40),
-                  DeviceStatus(),
-                  SizedBox(height: 20),
-                  ConnectionSteps(),
-                  SizedBox(height: 60),
-                  ConnectDevice(),
-                  SizedBox(height: 20),
-                ],
-              ),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Connection Successful"),
+        backgroundColor: Color(0xFF1ACF68),
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: ListView(
+          children: [
+            const SizedBox(height: 60),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Text(
+                  "Device Connection",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  "Connect your external device",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 40),
+                DeviceStatus(),
+                SizedBox(height: 20),
+                ConnectionSteps(),
+                SizedBox(height: 60),
+                ConnectDevice(),
+                SizedBox(height: 20),
+              ],
+            ),
+          ],
         ),
       ),
     );
