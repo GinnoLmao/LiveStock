@@ -23,7 +23,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
   List<Widget> get _pages => [
     HomePageContent(onTabSelected: _onItemTapped),
     ConnectionPageContent(),
-    ScanningPage1Fail(),
+    ScanningPage(),
   ];
 
   @override

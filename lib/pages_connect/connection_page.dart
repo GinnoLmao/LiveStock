@@ -176,7 +176,7 @@ class _ConnectionPageState extends State<ConnectionPage>
               String deviceInfo = 'BLE Device';
               String extraInfo = '';
 
-              // Check for manufacturer data
+              // Check for manufacturer dat a
               if (r.advertisementData.manufacturerData.isNotEmpty) {
                 var firstManufacturer =
                     r.advertisementData.manufacturerData.keys.first;
