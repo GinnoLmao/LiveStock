@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'scanning_page1.dart';
+import 'scanning_page1fail.dart';
 
 class ScanningPage extends StatefulWidget {
   const ScanningPage({super.key});
@@ -79,6 +81,90 @@ class _ScanningPageState extends State<ScanningPage> {
         ),
       );
       print("Error picking image: $e");
+    }
+  }
+
+  Future<void> _computeWeight() async {
+    if (_selectedImage == null) {
+      // Show error if no image is selected
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please select an image first"),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              SizedBox(width: 16),
+              Text("Computing weight..."),
+            ],
+          ),
+          backgroundColor: Color(0xFF1ACF68),
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Simulate computation delay
+      await Future.delayed(Duration(seconds: 2));
+
+      // TODO: Implement actual weight computation logic here
+      // For now, we'll simulate success/failure randomly
+      bool computationSuccess = DateTime.now().millisecond % 2 == 0;
+
+      if (computationSuccess) {
+        // Navigate to success page with computed weight
+        double computedWeight =
+            85.5 + (DateTime.now().millisecond % 20); // Simulated weight
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanningPage1(
+              computedWeight: computedWeight,
+              imagePath: _selectedImage?.path,
+            ),
+          ),
+        );
+      } else {
+        // Navigate to failure page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanningPage1Fail(
+              errorMessage:
+                  "Unable to detect livestock in the image. Please try with a clearer photo.",
+              imagePath: _selectedImage?.path,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle computation errors
+      print("Error during weight computation: $e");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ScanningPage1Fail(
+            errorMessage: "Computation failed: $e",
+            imagePath: _selectedImage?.path,
+          ),
+        ),
+      );
     }
   }
 
@@ -164,9 +250,7 @@ class _ScanningPageState extends State<ScanningPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.camera_alt, color: Colors.white),
-
                     SizedBox(width: 10),
-
                     Text(
                       "Start Scanning",
                       style: TextStyle(
@@ -179,34 +263,72 @@ class _ScanningPageState extends State<ScanningPage> {
                 ),
               ),
               SizedBox(height: 10),
-              Container(
-                width: 370,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(width: 1, color: Color(0xFF1ACF68)),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: InkWell(
-                  onTap: _pickImageFromGallery,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.upload, color: Color(0xFF1ACF68), size: 28),
-                      SizedBox(width: 4),
-                      Text(
-                        "Upload File",
-                        style: TextStyle(
-                          color: Color(0xFF1ACF68),
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              // Show different button based on whether image is selected
+              _selectedImage == null
+                  ? Container(
+                      width: 370,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(width: 1, color: Color(0xFF1ACF68)),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: InkWell(
+                        onTap: _pickImageFromGallery,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.upload,
+                              color: Color(0xFF1ACF68),
+                              size: 28,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              "Upload File",
+                              style: TextStyle(
+                                color: Color(0xFF1ACF68),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
+                    )
+                  : Container(
+                      width: 370,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(width: 1, color: Color(0xFF1ACF68)),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: InkWell(
+                        onTap: _computeWeight,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.straighten,
+                              color: Color(0xFF1ACF68),
+                              size: 28,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              "Compute Weight",
+                              style: TextStyle(
+                                color: Color(0xFF1ACF68),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
             ],
           ),
         ),

@@ -1,30 +1,57 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
-class ScanningPage1 extends StatelessWidget {
-  const ScanningPage1({super.key});
+class ScanningPage1 extends StatefulWidget {
+  final double? computedWeight;
+  final String? imagePath;
 
+  const ScanningPage1({Key? key, this.computedWeight, this.imagePath})
+    : super(key: key);
+
+  @override
+  State<ScanningPage1> createState() => _ScanningPage1State();
+}
+
+class _ScanningPage1State extends State<ScanningPage1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFF6F7F9),
+      appBar: AppBar(
+        backgroundColor: Color(0xFFF6F7F9),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Weight Computation',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 96),
             Text(
-              "Live Scanning",
+              "Weight Computation",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 15),
             Text(
-              "External device camera",
+              "Image analysis complete",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             SizedBox(height: 30),
             Material(
               elevation: 6,
               borderRadius: BorderRadius.circular(15),
-
               child: Container(
                 width: 370,
                 height: 230,
@@ -32,14 +59,27 @@ class ScanningPage1 extends StatelessWidget {
                   color: Color(0xFFD9D9D9),
                   borderRadius: BorderRadius.circular(15),
                 ),
+                child: widget.imagePath != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.file(
+                          File(widget.imagePath!),
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.image,
+                          size: 50,
+                          color: Colors.grey[600],
+                        ),
+                      ),
               ),
             ),
             SizedBox(height: 15),
-
             Material(
               elevation: 6,
               borderRadius: BorderRadius.circular(10),
-
               child: Container(
                 width: 370,
                 height: 100,
@@ -55,25 +95,25 @@ class ScanningPage1 extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // First row: "Scan Complete" with check icon
+                      // First row: "Computation Complete" with check icon
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "Scan Complete",
+                            "Computation Complete",
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          SizedBox(width: 8), // Space between text and icon
+                          SizedBox(width: 8),
                           Icon(
                             Icons.check_circle_outline,
                             color: Colors.green,
                             size: 20,
                           ),
-                          SizedBox(width: 180),
+                          SizedBox(width: 140),
                           Text(
                             "Just Now",
                             style: TextStyle(
@@ -84,12 +124,12 @@ class ScanningPage1 extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 8),
-                      // Second section: Detection information
+                      // Second section: Weight information
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Swine detected:",
+                            "Livestock detected:",
                             style: TextStyle(
                               fontWeight: FontWeight.w300,
                               fontSize: 12,
@@ -97,11 +137,11 @@ class ScanningPage1 extends StatelessWidget {
                           ),
                           SizedBox(height: 10),
                           Text(
-                            "ID: SW-2024-001\nWeight: ~ 90 kg",
+                            "ID: LV-${DateTime.now().year}-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}\nWeight: ~ ${widget.computedWeight?.toStringAsFixed(1) ?? "0.0"} kg",
                             style: TextStyle(
                               fontWeight: FontWeight.w300,
                               fontSize: 12,
-                              height: 1.0, // Removes line spacing
+                              height: 1.0,
                             ),
                           ),
                         ],
@@ -111,9 +151,7 @@ class ScanningPage1 extends StatelessWidget {
                 ),
               ),
             ),
-
             SizedBox(height: 30),
-
             Container(
               width: 370,
               height: 60,
@@ -121,27 +159,29 @@ class ScanningPage1 extends StatelessWidget {
                 color: Color(0xFF1ACF68),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.camera_alt, color: Colors.white),
-
-                  SizedBox(width: 10),
-
-                  Text(
-                    "Start Scanning",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.straighten, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text(
+                      "Compute Again",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-
             SizedBox(height: 10),
-
             Container(
               width: 370,
               height: 60,
@@ -150,12 +190,19 @@ class ScanningPage1 extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Color(0xFF1ACF68), width: 1),
               ),
-              child: Center(
-                child: Text(
-                  "New Scan",
-                  style: TextStyle(
-                    color: Color(0xFF1ACF68),
-                    fontWeight: FontWeight.w700,
+              child: InkWell(
+                onTap: () {
+                  // Save result and go back to home
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Center(
+                  child: Text(
+                    "Save Result",
+                    style: TextStyle(
+                      color: Color(0xFF1ACF68),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
