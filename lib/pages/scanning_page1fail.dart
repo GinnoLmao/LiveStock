@@ -167,6 +167,7 @@ class _ScanningPage1FailState extends State<ScanningPage1Fail> {
               ),
               child: InkWell(
                 onTap: () {
+                  // Navigate back to scanning page to try computation again
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(20),
@@ -198,7 +199,8 @@ class _ScanningPage1FailState extends State<ScanningPage1Fail> {
               ),
               child: InkWell(
                 onTap: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  // Navigate back to home page (BottomNavigation)
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 },
                 borderRadius: BorderRadius.circular(20),
                 child: Center(

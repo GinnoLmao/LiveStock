@@ -161,6 +161,7 @@ class _ScanningPage1State extends State<ScanningPage1> {
               ),
               child: InkWell(
                 onTap: () {
+                  // Navigate back to scanning page to compute again
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(20),
@@ -192,8 +193,8 @@ class _ScanningPage1State extends State<ScanningPage1> {
               ),
               child: InkWell(
                 onTap: () {
-                  // Save result and go back to home
-                  Navigator.popUntil(context, (route) => route.isFirst);
+                  // Save result and go back to home page
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                 },
                 borderRadius: BorderRadius.circular(20),
                 child: Center(

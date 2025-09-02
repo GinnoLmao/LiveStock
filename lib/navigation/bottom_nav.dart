@@ -35,7 +35,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
           // Back button - only show on Connect (index 1) and Scan (index 2) tabs
           if (_selectedIndex != 0)
             Positioned(
-              top: 50, // Adjust position as needed
+              top: 1, // Adjust position as needed
               left: 25,
               child: SafeArea(
                 child: Container(

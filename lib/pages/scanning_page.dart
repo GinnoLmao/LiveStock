@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'scanning_page1.dart';
 import 'scanning_page1fail.dart';
+import '../utils/yolo_detector.dart';
 
 class ScanningPage extends StatefulWidget {
   const ScanningPage({super.key});
@@ -15,6 +16,49 @@ class ScanningPage extends StatefulWidget {
 class _ScanningPageState extends State<ScanningPage> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  YoloDetector? _yoloDetector;
+  bool _isYoloInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeYolo();
+  }
+
+  @override
+  void dispose() {
+    _yoloDetector?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeYolo() async {
+    try {
+      _yoloDetector = YoloDetector();
+      bool success = await _yoloDetector!.initializeModel();
+
+      // Check if widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          _isYoloInitialized = success;
+        });
+      }
+
+      if (success) {
+        print("YOLO model initialized successfully");
+      } else {
+        print("Failed to initialize YOLO model");
+      }
+    } catch (e) {
+      print("Error initializing YOLO: $e");
+
+      // Check if widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          _isYoloInitialized = false;
+        });
+      }
+    }
+  }
 
   Future<void> _pickImageFromGallery() async {
     try {
@@ -39,47 +83,56 @@ class _ScanningPageState extends State<ScanningPage> {
         );
 
         if (image != null) {
-          setState(() {
-            _selectedImage = File(image.path);
-          });
+          // Check if widget is still mounted before calling setState
+          if (mounted) {
+            setState(() {
+              _selectedImage = File(image.path);
+            });
+          }
 
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Image selected successfully!"),
-              backgroundColor: Color(0xFF1ACF68),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          // Show success message only if widget is still mounted
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Image selected successfully!"),
+                backgroundColor: Color(0xFF1ACF68),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
 
           print("Selected image path: ${image.path}");
         }
       } else {
         // Permission denied
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Gallery access permission is required to select images",
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Gallery access permission is required to select images",
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+              action: SnackBarAction(
+                label: "Settings",
+                textColor: Colors.white,
+                onPressed: () => openAppSettings(),
+              ),
             ),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
-            action: SnackBarAction(
-              label: "Settings",
-              textColor: Colors.white,
-              onPressed: () => openAppSettings(),
-            ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       // Handle any errors
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error selecting image: $e"),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error selecting image: $e"),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
       print("Error picking image: $e");
     }
   }
@@ -87,50 +140,76 @@ class _ScanningPageState extends State<ScanningPage> {
   Future<void> _computeWeight() async {
     if (_selectedImage == null) {
       // Show error if no image is selected
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Please select an image first"),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please select an image first"),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
       return;
     }
 
     try {
       // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
                 ),
-              ),
-              SizedBox(width: 16),
-              Text("Computing weight..."),
-            ],
+                SizedBox(width: 16),
+                Text("Analyzing image with AI..."),
+              ],
+            ),
+            backgroundColor: Color(0xFF1ACF68),
+            duration: Duration(seconds: 5),
           ),
-          backgroundColor: Color(0xFF1ACF68),
-          duration: Duration(seconds: 3),
-        ),
-      );
+        );
+      }
 
-      // Simulate computation delay
-      await Future.delayed(Duration(seconds: 2));
+      // Use YOLO detection if available, otherwise fallback to simulation
+      Map<String, dynamic> results;
 
-      // TODO: Implement actual weight computation logic here
-      // For now, we'll simulate success/failure randomly
-      bool computationSuccess = DateTime.now().millisecond % 2 == 0;
+      if (_isYoloInitialized && _yoloDetector != null) {
+        // Use actual YOLO detection
+        results = await _yoloDetector!.detectAndEstimateWeight(_selectedImage!);
+      } else {
+        // Fallback to simulation (as before)
+        await Future.delayed(Duration(seconds: 2));
+        bool computationSuccess = DateTime.now().millisecond % 2 == 0;
 
-      if (computationSuccess) {
-        // Navigate to success page with computed weight
-        double computedWeight =
-            85.5 + (DateTime.now().millisecond % 20); // Simulated weight
+        if (computationSuccess) {
+          double simulatedWeight = 85.5 + (DateTime.now().millisecond % 20);
+          results = {
+            'success': true,
+            'estimatedWeight': simulatedWeight,
+            'method': 'simulation',
+          };
+        } else {
+          results = {
+            'success': false,
+            'error': 'Simulated detection failure',
+            'method': 'simulation',
+          };
+        }
+      }
+
+      // Navigate based on results - only if widget is still mounted
+      if (!mounted) return;
+
+      if (results['success']) {
+        double computedWeight = results['estimatedWeight'] ?? 0.0;
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -141,13 +220,15 @@ class _ScanningPageState extends State<ScanningPage> {
           ),
         );
       } else {
-        // Navigate to failure page
+        String errorMessage =
+            results['error'] ??
+            "Unable to detect livestock in the image. Please try with a clearer photo.";
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ScanningPage1Fail(
-              errorMessage:
-                  "Unable to detect livestock in the image. Please try with a clearer photo.",
+              errorMessage: errorMessage,
               imagePath: _selectedImage?.path,
             ),
           ),
@@ -156,15 +237,19 @@ class _ScanningPageState extends State<ScanningPage> {
     } catch (e) {
       // Handle computation errors
       print("Error during weight computation: $e");
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScanningPage1Fail(
-            errorMessage: "Computation failed: $e",
-            imagePath: _selectedImage?.path,
+
+      // Only navigate if widget is still mounted
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanningPage1Fail(
+              errorMessage: "Computation failed: $e",
+              imagePath: _selectedImage?.path,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -183,9 +268,30 @@ class _ScanningPageState extends State<ScanningPage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               SizedBox(height: 15),
-              Text(
-                "External device camera",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "External device camera",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(width: 10),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _isYoloInitialized ? Colors.green : Colors.orange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _isYoloInitialized ? "AI Ready" : "AI Loading",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 20),
               Container(
