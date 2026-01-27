@@ -250,8 +250,7 @@ class YoloResultsWidget extends StatelessWidget {
   final Map<String, dynamic> results;
   final File? imageFile;
 
-  const YoloResultsWidget({Key? key, required this.results, this.imageFile})
-    : super(key: key);
+  const YoloResultsWidget({super.key, required this.results, this.imageFile});
 
   @override
   Widget build(BuildContext context) {

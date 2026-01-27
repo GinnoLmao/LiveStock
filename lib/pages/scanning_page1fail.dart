@@ -4,8 +4,7 @@ class ScanningPage1Fail extends StatefulWidget {
   final String? errorMessage;
   final String? imagePath;
 
-  const ScanningPage1Fail({Key? key, this.errorMessage, this.imagePath})
-    : super(key: key);
+  const ScanningPage1Fail({super.key, this.errorMessage, this.imagePath});
 
   @override
   State<ScanningPage1Fail> createState() => _ScanningPage1FailState();

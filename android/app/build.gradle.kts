@@ -19,6 +19,12 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    // Required for flutter_vision TFLite models
+    aaptOptions {
+        noCompress("tflite")
+        noCompress("lite")
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.livestock_prototype"

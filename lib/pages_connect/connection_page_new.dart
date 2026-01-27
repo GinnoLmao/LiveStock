@@ -318,8 +318,7 @@ class ConnectDevice extends StatelessWidget {
   final String? selectedDevice;
   final bool isEnabled;
 
-  const ConnectDevice({Key? key, this.selectedDevice, required this.isEnabled})
-    : super(key: key);
+  const ConnectDevice({super.key, this.selectedDevice, required this.isEnabled});
 
   @override
   Widget build(BuildContext context) {

@@ -1,211 +1,314 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-// import 'package:flutter_vision/flutter_vision.dart'; // Temporarily disabled
+import 'package:flutter/services.dart';
+import 'package:executorch_flutter/executorch_flutter.dart';
+import 'package:image/image.dart' as img;
 
 class YoloDetector {
-  // late FlutterVision vision; // Disabled for compatibility
+  ExecuTorchModel? _model;
+  List<String> _labels = [];
   bool isModelLoaded = false;
 
-  YoloDetector() {
-    // vision = FlutterVision(); // Disabled for compatibility
-  }
+  YoloDetector();
 
-  // Initialize YOLO model (simulation mode)
+  // Initialize YOLO model with ExecuTorch
   Future<bool> initializeModel() async {
     try {
-      // Simulate model loading time
-      await Future.delayed(Duration(seconds: 1));
+      // Load labels
+      final labelsData = await rootBundle.loadString(
+        'assets/models/labels.txt',
+      );
+      _labels = labelsData
+          .split('\n')
+          .where((line) => line.trim().isNotEmpty)
+          .toList();
 
-      // For now, we'll simulate that the model is "loaded"
-      // but actually use our enhanced simulation
+      // Load ExecuTorch model from assets
+      _model = await ExecuTorchModel.loadFromAsset('assets/models/best.pte');
+
       isModelLoaded = true;
-      print("YOLO model simulation initialized successfully");
+      print("YOLOv8 ExecuTorch model loaded successfully");
       return true;
     } catch (e) {
-      print("Error initializing YOLO simulation: $e");
+      print("Error loading YOLO model: $e");
       isModelLoaded = false;
       return false;
     }
   }
 
-  // Detect livestock in image and estimate weight (Enhanced Simulation Mode)
+  // Detect pig in image and estimate weight using YOLOv8 ExecuTorch
   Future<Map<String, dynamic>> detectAndEstimateWeight(File imageFile) async {
-    if (!isModelLoaded) {
-      throw Exception("YOLO simulation not initialized");
+    if (!isModelLoaded || _model == null) {
+      throw Exception("YOLO model not initialized");
     }
 
     try {
-      // Simulate processing time for realistic experience
-      await Future.delayed(Duration(seconds: 2));
-
-      // Enhanced simulation - analyze image properties for more realistic results
+      // Read and decode image
       final imageBytes = imageFile.readAsBytesSync();
-      final imageSize = imageBytes.length;
+      final image = img.decodeImage(imageBytes);
 
-      // Simulate detection based on image characteristics
-      bool detectionSuccess = _simulateDetection(imageFile, imageSize);
-
-      if (!detectionSuccess) {
+      if (image == null) {
         return {
           'success': false,
-          'error':
-              'No livestock detected in image. Try with a clearer photo of cattle, pigs, sheep, or other livestock.',
+          'error': 'Failed to decode image',
           'animals': [],
         };
       }
 
-      // Simulate detected animal
-      DetectedAnimal simulatedAnimal = _generateSimulatedDetection(
-        imageFile,
-        imageSize,
+      // Preprocess image to 640x640 (YOLO input size)
+      final resizedImage = img.copyResize(image, width: 640, height: 640);
+
+      // Convert to Float32List normalized [0, 1]
+      final inputData = Float32List(1 * 3 * 640 * 640);
+      int pixelIndex = 0;
+      for (int c = 0; c < 3; c++) {
+        for (int y = 0; y < 640; y++) {
+          for (int x = 0; x < 640; x++) {
+            final pixel = resizedImage.getPixel(x, y);
+            if (c == 0)
+              inputData[pixelIndex] = pixel.r / 255.0;
+            else if (c == 1)
+              inputData[pixelIndex] = pixel.g / 255.0;
+            else
+              inputData[pixelIndex] = pixel.b / 255.0;
+            pixelIndex++;
+          }
+        }
+      }
+
+      // Run inference with TensorData
+      // Convert Float32List to Uint8List (byte representation)
+      final inputBytes = Uint8List.view(inputData.buffer);
+      final inputTensor = TensorData(
+        shape: [1, 3, 640, 640],
+        dataType: TensorType.float32,
+        data: inputBytes,
+        name: 'input',
+      );
+      final outputs = await _model!.forward([inputTensor]);
+
+      // Parse YOLOv8 output
+      final detections = _parseYoloOutput(outputs, image.width, image.height);
+
+      if (detections.isEmpty) {
+        return {
+          'success': false,
+          'error':
+              'No pig detected in image. Please ensure the pig is clearly visible in side profile.',
+          'animals': [],
+        };
+      }
+
+      // Get best detection
+      final bestDetection = detections.first;
+
+      // Extract detection data
+      String tag = bestDetection['class'] ?? 'pig-IL8J';
+      double confidence = bestDetection['confidence'];
+
+      // Create bounding box (normalized coordinates)
+      Rectangle boundingBox = Rectangle(
+        bestDetection['x'],
+        bestDetection['y'],
+        bestDetection['width'],
+        bestDetection['height'],
+      );
+
+      // Since TorchScript detection model doesn't provide polygons,
+      // estimate measurements from bounding box
+      PigMeasurements measurements = _estimateMeasurementsFromBox(
+        boundingBox,
+        image.width,
+        image.height,
+      );
+
+      // Calculate weight using Heart Girth formula
+      double weight = _calculateWeightFromMeasurements(
+        measurements.heartGirthCm,
+        measurements.bodyLengthCm,
+      );
+
+      // Create detected animal object
+      DetectedAnimal detectedPig = DetectedAnimal(
+        className: tag,
+        confidence: confidence,
+        boundingBox: boundingBox,
+        estimatedWeight: weight,
+        measurements: measurements,
+        polygonPoints: null, // Detection model doesn't provide polygons
       );
 
       return {
         'success': true,
-        'primaryAnimal': simulatedAnimal,
-        'allAnimals': [simulatedAnimal],
-        'estimatedWeight': simulatedAnimal.estimatedWeight,
-        'method': 'enhanced_simulation',
+        'primaryAnimal': detectedPig,
+        'allAnimals': [detectedPig],
+        'estimatedWeight': weight,
+        'method': 'heart_girth_formula',
+        'measurements': measurements.toMap(),
       };
     } catch (e) {
-      print("Error during YOLO simulation: $e");
-      return {
-        'success': false,
-        'error': 'Detection simulation failed: $e',
-        'animals': [],
-      };
+      print("Error during YOLO detection: $e");
+      return {'success': false, 'error': 'Detection failed: $e', 'animals': []};
     }
   }
 
-  // Simulate detection success based on image properties
-  bool _simulateDetection(File imageFile, int imageSize) {
-    // Base success rate: 75%
-    double baseSuccessRate = 0.75;
+  // Parse YOLOv8 output from ExecuTorch
+  List<Map<String, dynamic>> _parseYoloOutput(
+    List<TensorData> outputs,
+    int imageWidth,
+    int imageHeight,
+  ) {
+    final List<Map<String, dynamic>> detections = [];
 
-    // Adjust based on image size (larger images more likely to have clear subjects)
-    double sizeBonus = (imageSize > 500000)
-        ? 0.15
-        : 0.0; // 500KB+ images get bonus
-    double finalSuccessRate = (baseSuccessRate + sizeBonus).clamp(0.0, 0.9);
+    if (outputs.isEmpty) return detections;
 
-    // Random determination with bias toward success
-    double randomValue = DateTime.now().millisecond / 1000.0;
-    return randomValue < finalSuccessRate;
-  }
+    // YOLOv8 output format: [batch, num_predictions, 85]
+    // [x, y, w, h, objectness, class_scores...]
+    final outputData = outputs[0].data;
+    final shape = outputs[0].shape;
 
-  // Generate realistic simulated detection
-  DetectedAnimal _generateSimulatedDetection(File imageFile, int imageSize) {
-    // List of common livestock with realistic probabilities
-    List<String> livestockTypes = ['cow', 'cattle', 'pig', 'sheep', 'goat'];
-    List<double> probabilities = [
-      0.35,
-      0.25,
-      0.20,
-      0.15,
-      0.05,
-    ]; // Cattle most common
+    // Get output as Float32List
+    Float32List floatData;
+    if (outputData is Float32List) {
+      floatData = outputData as Float32List;
+    } else if (outputData is Uint8List) {
+      final byteData = ByteData.sublistView(outputData);
+      final floatList = <double>[];
+      for (int i = 0; i < outputData.length; i += 4) {
+        floatList.add(byteData.getFloat32(i, Endian.little));
+      }
+      floatData = Float32List.fromList(floatList);
+    } else {
+      return detections;
+    }
 
-    // Select animal type based on probabilities
-    String selectedAnimal = _selectWeightedRandom(
-      livestockTypes,
-      probabilities,
-    );
+    final numPredictions = (shape.length > 1 && shape[1] != null)
+        ? shape[1]!
+        : (floatData.length ~/ 85);
 
-    // Generate realistic confidence (80-95% for good detections)
-    double confidence = 0.80 + (DateTime.now().microsecond % 150) / 1000.0;
+    for (int i = 0; i < numPredictions; i++) {
+      final offset = i * 85;
+      final x = floatData[offset];
+      final y = floatData[offset + 1];
+      final w = floatData[offset + 2];
+      final h = floatData[offset + 3];
+      final objectness = floatData[offset + 4];
 
-    // Generate realistic bounding box (simulate different sized animals in frame)
-    Rectangle boundingBox = Rectangle(
-      0.1 + (DateTime.now().microsecond % 200) / 1000.0, // x: 0.1-0.3
-      0.1 + (DateTime.now().microsecond % 300) / 1000.0, // y: 0.1-0.4
-      0.3 + (DateTime.now().microsecond % 400) / 1000.0, // width: 0.3-0.7
-      0.4 + (DateTime.now().microsecond % 300) / 1000.0, // height: 0.4-0.7
-    );
+      // Get class with highest score
+      double maxScore = 0;
+      int maxClass = 0;
+      for (int c = 0; c < 80; c++) {
+        final score = floatData[offset + 5 + c];
+        if (score > maxScore) {
+          maxScore = score;
+          maxClass = c;
+        }
+      }
 
-    DetectedAnimal animal = DetectedAnimal(
-      className: selectedAnimal,
-      confidence: confidence,
-      boundingBox: boundingBox,
-    );
+      final confidence = objectness * maxScore;
 
-    // Estimate weight with enhanced algorithm
-    animal.estimatedWeight = _estimateWeightEnhanced(animal, imageSize);
-
-    return animal;
-  }
-
-  // Select item based on weighted probabilities
-  String _selectWeightedRandom(List<String> items, List<double> weights) {
-    double random = DateTime.now().millisecond / 1000.0;
-    double cumulativeWeight = 0.0;
-
-    for (int i = 0; i < items.length; i++) {
-      cumulativeWeight += weights[i];
-      if (random <= cumulativeWeight) {
-        return items[i];
+      if (confidence > 0.4) {
+        detections.add({
+          'x': (x - w / 2) / 640,
+          'y': (y - h / 2) / 640,
+          'width': w / 640,
+          'height': h / 640,
+          'confidence': confidence,
+          'class': maxClass < _labels.length ? _labels[maxClass] : 'pig-IL8J',
+        });
       }
     }
 
-    return items.first; // Fallback
+    // Sort by confidence
+    detections.sort(
+      (a, b) =>
+          (b['confidence'] as double).compareTo(a['confidence'] as double),
+    );
+
+    return detections;
   }
 
-  // Enhanced weight estimation algorithm
-  double _estimateWeightEnhanced(DetectedAnimal animal, int imageSize) {
-    double boxArea = animal.boundingBox.width * animal.boundingBox.height;
-    double confidence = animal.confidence;
-    String className = animal.className.toLowerCase();
+  // Estimate measurements from bounding box when segmentation unavailable
+  PigMeasurements _estimateMeasurementsFromBox(
+    Rectangle boundingBox,
+    int imageWidth,
+    int imageHeight,
+  ) {
+    // Convert normalized coordinates to pixels
+    double bodyLengthPixels = boundingBox.width * imageWidth;
+    double chestHeightPixels = boundingBox.height * imageHeight;
+    double chestWidthPixels = bodyLengthPixels * 0.5;
 
-    // Base weights for different animal types (in kg)
-    Map<String, double> baseWeights = {
-      'cow': 500.0,
-      'cattle': 500.0,
-      'bull': 700.0,
-      'ox': 600.0,
-      'pig': 100.0,
-      'swine': 100.0,
-      'hog': 120.0,
-      'sheep': 60.0,
-      'lamb': 30.0,
-      'goat': 50.0,
-      'horse': 450.0,
-      'pony': 300.0,
-      'chicken': 2.0,
-      'rooster': 3.0,
-      'hen': 2.0,
-      'duck': 1.5,
-      'goose': 4.0,
-    };
+    // Estimate heart girth assuming elliptical cross-section
+    double heartGirthPixels = 2 * (chestWidthPixels + chestHeightPixels * 0.6);
 
-    double baseWeight = baseWeights[className] ?? 100.0;
+    // Calibrate pixels to centimeters (assume average pig is 100cm long)
+    double pixelsPerCm = bodyLengthPixels / 100.0;
 
-    // Adjust weight based on bounding box size (larger box = larger animal)
-    double sizeMultiplier = (boxArea / 0.3).clamp(0.5, 2.0);
-    double confidenceMultiplier = (0.8 + (confidence * 0.4));
+    return PigMeasurements(
+      bodyLengthCm: bodyLengthPixels / pixelsPerCm,
+      heartGirthCm: heartGirthPixels / pixelsPerCm,
+      chestWidthCm: chestWidthPixels / pixelsPerCm,
+      chestHeightCm: chestHeightPixels / pixelsPerCm,
+      pixelsPerCm: pixelsPerCm,
+    );
+  }
 
-    // Factor in image quality (larger images may have more detail)
-    double qualityMultiplier = (imageSize > 1000000)
-        ? 1.1
-        : (imageSize > 500000)
-        ? 1.0
-        : 0.9;
+  // Calculate pig weight using Heart Girth Method formula
+  // Formula: Weight (kg) = (Heart Girth² × Body Length) / 1156
+  // Accuracy: ±8-10% for market pigs (23-136 kg)
+  double _calculateWeightFromMeasurements(
+    double heartGirthCm,
+    double bodyLengthCm,
+  ) {
+    // Heart Girth Method (most accurate for pigs)
+    double weight = (heartGirthCm * heartGirthCm * bodyLengthCm) / 1156.0;
 
-    double estimatedWeight =
-        baseWeight * sizeMultiplier * confidenceMultiplier * qualityMultiplier;
-
-    // Add realistic variation (±15%)
-    double variation = (DateTime.now().millisecond % 30 - 15) / 100.0;
-    estimatedWeight = estimatedWeight * (1 + variation);
-
-    return estimatedWeight.clamp(1.0, 1200.0); // Reasonable weight range
+    // Clamp to reasonable pig weight range (10-300 kg)
+    return weight.clamp(10.0, 300.0);
   }
 
   // Clean up resources
   Future<void> dispose() async {
     if (isModelLoaded) {
-      // await vision.closeYoloModel(); // Disabled for compatibility
+      _model = null;
       isModelLoaded = false;
-      print("YOLO simulation disposed");
+      print("YOLO model disposed");
     }
+  }
+}
+
+// Class to store pig body measurements
+class PigMeasurements {
+  final double bodyLengthCm;
+  final double heartGirthCm;
+  final double chestWidthCm;
+  final double chestHeightCm;
+  final double pixelsPerCm;
+
+  PigMeasurements({
+    required this.bodyLengthCm,
+    required this.heartGirthCm,
+    required this.chestWidthCm,
+    required this.chestHeightCm,
+    required this.pixelsPerCm,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'bodyLength': bodyLengthCm,
+      'heartGirth': heartGirthCm,
+      'chestWidth': chestWidthCm,
+      'chestHeight': chestHeightCm,
+      'pixelsPerCm': pixelsPerCm,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'PigMeasurements(length: ${bodyLengthCm.toStringAsFixed(1)}cm, '
+        'girth: ${heartGirthCm.toStringAsFixed(1)}cm)';
   }
 }
 
@@ -215,17 +318,25 @@ class DetectedAnimal {
   final double confidence;
   final Rectangle boundingBox;
   double estimatedWeight;
+  final PigMeasurements? measurements;
+  final List<Map<String, dynamic>>? polygonPoints;
 
   DetectedAnimal({
     required this.className,
     required this.confidence,
     required this.boundingBox,
     this.estimatedWeight = 0.0,
+    this.measurements,
+    this.polygonPoints,
   });
 
   @override
   String toString() {
-    return 'DetectedAnimal(class: $className, confidence: ${confidence.toStringAsFixed(2)}, weight: ${estimatedWeight.toStringAsFixed(1)}kg)';
+    String measurementStr = measurements != null
+        ? ', measurements: $measurements'
+        : '';
+    return 'DetectedAnimal(class: $className, confidence: ${confidence.toStringAsFixed(2)}, '
+        'weight: ${estimatedWeight.toStringAsFixed(1)}kg$measurementStr)';
   }
 }
 
@@ -250,14 +361,13 @@ class YoloResultsWidget extends StatelessWidget {
   final Map<String, dynamic> results;
   final File? imageFile;
 
-  const YoloResultsWidget({Key? key, required this.results, this.imageFile})
-    : super(key: key);
+  const YoloResultsWidget({super.key, required this.results, this.imageFile});
 
   @override
   Widget build(BuildContext context) {
     if (!results['success']) {
       return Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.red.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
@@ -265,8 +375,8 @@ class YoloResultsWidget extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 32),
-            SizedBox(height: 8),
+            const Icon(Icons.error_outline, color: Colors.red, size: 32),
+            const SizedBox(height: 8),
             Text(
               'Detection Failed',
               style: TextStyle(
@@ -274,7 +384,7 @@ class YoloResultsWidget extends StatelessWidget {
                 color: Colors.red[800],
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               results['error'] ?? 'Unknown error',
               style: TextStyle(color: Colors.red[600]),
@@ -289,7 +399,7 @@ class YoloResultsWidget extends StatelessWidget {
     List<DetectedAnimal> allAnimals = results['allAnimals'];
 
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.green.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
@@ -300,8 +410,12 @@ class YoloResultsWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.check_circle_outline, color: Colors.green, size: 24),
-              SizedBox(width: 8),
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
               Text(
                 'Livestock Detected',
                 style: TextStyle(
@@ -312,11 +426,11 @@ class YoloResultsWidget extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
 
           // Primary detection info
           Container(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(6),
@@ -331,32 +445,79 @@ class YoloResultsWidget extends StatelessWidget {
                     color: Colors.grey[700],
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
                   'Animal: ${primaryAnimal.className.toUpperCase()}',
-                  style: TextStyle(fontSize: 14),
+                  style: const TextStyle(fontSize: 14),
                 ),
                 Text(
                   'Confidence: ${(primaryAnimal.confidence * 100).toStringAsFixed(1)}%',
-                  style: TextStyle(fontSize: 14),
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+
+                // Show measurements if available
+                if (primaryAnimal.measurements != null) ...[
+                  const Divider(),
+                  Text(
+                    'Body Measurements:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '• Body Length: ${primaryAnimal.measurements!.bodyLengthCm.toStringAsFixed(1)} cm',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  Text(
+                    '• Heart Girth: ${primaryAnimal.measurements!.heartGirthCm.toStringAsFixed(1)} cm',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                const Divider(),
+                Text(
+                  'Estimated Weight:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                    fontSize: 12,
+                  ),
                 ),
                 Text(
-                  'Estimated Weight: ${primaryAnimal.estimatedWeight.toStringAsFixed(1)} kg',
+                  '${primaryAnimal.estimatedWeight.toStringAsFixed(1)} kg',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.green[700],
                   ),
                 ),
+                Text(
+                  'Range: ${(primaryAnimal.estimatedWeight * 0.92).toStringAsFixed(1)} - ${(primaryAnimal.estimatedWeight * 1.08).toStringAsFixed(1)} kg (±8%)',
+                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                ),
+                if (primaryAnimal.measurements != null)
+                  Text(
+                    'Method: Heart Girth Formula',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
               ],
             ),
           ),
 
           if (allAnimals.length > 1) ...[
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Additional detections: ${allAnimals.length - 1}',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ],

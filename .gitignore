@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Model files (large binary files)
+# Uncomment if you don't want to commit model to git
+# *.torchscript
+# *.tflite
+# *.pt
+
+# Ephemeral symlinks
+**/.plugin_symlinks

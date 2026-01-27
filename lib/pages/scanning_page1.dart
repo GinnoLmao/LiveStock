@@ -5,8 +5,7 @@ class ScanningPage1 extends StatefulWidget {
   final double? computedWeight;
   final String? imagePath;
 
-  const ScanningPage1({Key? key, this.computedWeight, this.imagePath})
-    : super(key: key);
+  const ScanningPage1({super.key, this.computedWeight, this.imagePath});
 
   @override
   State<ScanningPage1> createState() => _ScanningPage1State();

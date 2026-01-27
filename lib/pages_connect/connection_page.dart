@@ -88,7 +88,7 @@ class _ConnectionPageState extends State<ConnectionPage>
 
   Future<void> _getConnectedDevices() async {
     try {
-      devices = await FlutterBluePlus.connectedDevices;
+      devices = FlutterBluePlus.connectedDevices;
       if (mounted) setState(() {});
     } catch (e) {
       print("Error getting connected devices: $e");
@@ -286,8 +286,12 @@ class _ConnectionPageState extends State<ConnectionPage>
     ).push(MaterialPageRoute(builder: (context) => const ConnectingPage()));
 
     try {
-      // Connect to the device
-      await device.connect(timeout: Duration(seconds: 15));
+      // Connect to the device (flutter_blue_plus 2.1.0)
+      await device.connect(
+        timeout: const Duration(seconds: 15),
+        mtu: null,
+        license: License.free, // Required in flutter_blue_plus 2.1.0
+      );
 
       // Listen to connection state
       device.connectionState.listen((BluetoothConnectionState state) {
@@ -731,11 +735,11 @@ class ConnectDevice extends StatelessWidget {
   final Function(BluetoothDevice)? onConnect;
 
   const ConnectDevice({
-    Key? key,
+    super.key,
     this.selectedDevice,
     required this.isEnabled,
     this.onConnect,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
